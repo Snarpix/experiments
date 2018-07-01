@@ -22,6 +22,7 @@
 
 #include <cstddef>
 #include <cstring>
+#include <limits>
 #include <iostream>
 #include <unistd.h>
 #include <sys/mman.h>
@@ -59,6 +60,12 @@ static constexpr std::uint8_t nops[9][9] = {
 };
 static constexpr std::size_t nop_max_size = sizeof(nops)/sizeof(nops[0]);
 
+static constexpr std::uint8_t jmp_rel8 = 0xEB;
+static constexpr std::uint8_t jmp_rel8_size = sizeof(jmp_rel8) + sizeof(int8_t);
+static constexpr std::uint8_t jmp_rel32 = 0xE9;
+static constexpr std::uint8_t jmp_rel32_size = sizeof(jmp_rel32) + sizeof(int32_t);
+static constexpr std::size_t jmp_optimization_threshold = 16;
+
 void nopify(std::uint8_t* begin, std::uint8_t* end) {
     if(end <= begin) {
         std::cout << "Invalid size of nops" << std::endl;
@@ -75,6 +82,22 @@ void nopify(std::uint8_t* begin, std::uint8_t* end) {
     unprotect(begin_page);
     if(begin_page != end_page) {
         unprotect(end_page);
+    }
+
+    if(size >= jmp_optimization_threshold) {
+        if(size <= std::numeric_limits<int8_t>::max()) {
+            *begin++ = jmp_rel8;
+            int8_t jmp_offset = size - jmp_rel8_size;
+            memcpy(begin, &jmp_offset, sizeof(jmp_offset));
+            size -= jmp_rel8_size;
+            begin += sizeof(jmp_offset);
+        } else if(size <= std::numeric_limits<int32_t>::max()) {
+            *begin++ = jmp_rel32;
+            int32_t jmp_offset = size - jmp_rel32_size;
+            memcpy(begin, &jmp_offset, sizeof(jmp_offset));
+            size -= jmp_rel32_size;
+            begin += sizeof(jmp_offset);
+        }
     }
 
     while(size) {
