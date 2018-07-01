@@ -140,7 +140,7 @@ void debug2() {
 
 // This is must-have. WILL produce compile error
 [[gnu::noinline]]
-void foo() {
+void foo() noexcept {
     RUNTIME_IF_BLOCK(debug1_rif, \
         debug1(); \
     )
