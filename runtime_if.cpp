@@ -114,9 +114,11 @@ void nopify(std::uint8_t* begin, std::uint8_t* end) {
 }
 
 #define RUNTIME_IF_BLOCK(func, code) \
-    asm volatile ("_" #func "_rif_start:"); \
-    code \
-    asm volatile ("_" #func "_rif_end:");
+    { \
+        asm volatile ("_" #func "_rif_start:"); \
+        code \
+        asm volatile ("_" #func "_rif_end:"); \
+    }
 
 #define RUNTIME_IF_DISABLE(func) \
     do { \
