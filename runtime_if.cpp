@@ -111,6 +111,7 @@ void rif_disable(std::uint8_t* begin, std::uint8_t* end) {
     if(memcmp(begin, nop5, sizeof(nop5)) != 0) {
         if(memcmp(begin, jmp_buffer, sizeof(jmp_buffer)) == 0) {
             std::cout << "Trying to disable already disabled RIF block" << std::endl;
+            return;
         } else {
             std::cout << "Try to disable something that is not a RIF block" << std::endl;
             abort();
@@ -129,6 +130,7 @@ void rif_enable(std::uint8_t* begin, std::uint8_t* end) {
     if(memcmp(begin, jmp_buffer, sizeof(jmp_buffer)) != 0) {
         if(memcmp(begin, nop5, sizeof(nop5)) == 0) {
             std::cout << "Trying to enable already enable RIF block" << std::endl;
+            return;
         } else {
             std::cout << "Try to enable something that is not a RIF block" << std::endl;
             abort();
@@ -201,12 +203,20 @@ int main() {
     RUNTIME_IF_DISABLE(debug2_rif);
     std::cout << "Test Debug!" << std::endl;
     foo();
+    std::cout << "Disable 2!" << std::endl;
+    RUNTIME_IF_DISABLE(debug2_rif);
+    std::cout << "Test Debug!" << std::endl;
+    foo();
     std::cout << "Disable 3!" << std::endl;
     RUNTIME_IF_DISABLE(debug3_rif);
     std::cout << "Test Debug!" << std::endl;
     foo();
     std::cout << "Enable 2!" << std::endl;
     RUNTIME_IF_ENABLE(debug2_rif);
+    std::cout << "Test Debug!" << std::endl;
+    foo();
+    std::cout << "Enable 3!" << std::endl;
+    RUNTIME_IF_ENABLE(debug3_rif);
     std::cout << "Test Debug!" << std::endl;
     foo();
     std::cout << "Enable 3!" << std::endl;
